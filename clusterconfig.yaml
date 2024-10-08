@@ -1,0 +1,21 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+metadata:
+  name: eks-demo-cluster
+  region: us-west-2
+  version: "1.29"
+
+managedNodeGroups:
+  - name: eks-node-group
+    instanceType: t3.medium
+    minSize: 2
+    maxSize: 5
+    desiredCapacity: 2
+    volumeSize: 20
+    tags:
+      k8s.io/cluster-autoscaler/enabled: "true"
+      k8s.io/cluster-autoscaler/eks-demo-cluster: "owned"
+    iam:
+      withAddonPolicies:
+        autoScaler: true
+        albIngress: true
