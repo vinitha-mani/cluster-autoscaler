@@ -1,0 +1,21 @@
+Autoscaler
+eksctl create cluster --asg-access --name my-cluster-1 --asg-access --nodes-max 10 --nodes-min 2 --nodes 3 --node-type t2.small --nodegroup-name Node-group-A --ssh-access --enable-ssm --version 1.25 --region us-west-1
+kubectl apply -f cluster-autoscaler.yaml
+kubectl patch deployment cluster-autoscaler -n kube-system -p '{"spec":{"template": {"metadata": {"annotations": {"cluster-autoscaler.kubernetes.io/safe-to-evict": "false"}}}}}'
+kubectl set image deployment cluster-autoscaler -n kube-system cluster-autoscaler=registry.k8s.io/autoscaling/cluster-autoscaler:latest
+kubectl logs -n kube-system deployment.apps/cluster-autoscaler
+
+HPA
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+kubectl apply -f deploy-svc.yaml
+kubectl apply -f hpa.yaml
+
+Testing
+kubectl run -i --tty load-generator --rm --image=busybox:1.28 --restart=Never -- /bin/sh -c "while sleep 0.01; do wget -q -O- http://php-apache; done"
+
+in a different terminal 
+kubectl get hpa -w
+kubectl get pods -w
+kubectl get nodes -w
+
+
